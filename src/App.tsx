@@ -1,25 +1,51 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useReducer, lazy, Suspense } from "react";
+import "./App.css";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { ActionType, initialState, reducerfunction } from "./Reducer/Reducer";
+import { Context } from "./Context/Context";
+import Navbar from "./Components/Navbar";
+import ModalPage from "./Components/ModalPage";
+import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
+import { Modal_Box_Style } from "./Styled-Components/Styled-Components";
+const LogInPage = lazy(() => import("./Components/LogInPage"));
+const SignUpPage = lazy(() => import("./Components/SignUpPage"));
+const Dashboard = lazy(() => import("./Components/Dashboard"));
 
 function App() {
+  const [state, dispatch] = useReducer(reducerfunction, initialState);
+  const { loggedIn } = state;
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <Context.Provider value={{ state, dispatch }}>
+          <Navbar />
+          <Suspense
+            fallback={
+              <Box sx={Modal_Box_Style}>
+                <CircularProgress />
+              </Box>
+            }
+          >
+            <Routes>
+              <Route path="/" element={<Navigate to="signup" />} />
+              <Route path="signup" element={<SignUpPage />} />
+              <Route path="login" element={<LogInPage />} />
+              <Route
+                path="dashboard"
+                element={loggedIn ? <Dashboard /> : <LogInPage />}
+              />
+            </Routes>
+          </Suspense>
+          <ModalPage />
+        </Context.Provider>
+      </div>
+    </Router>
   );
 }
 
